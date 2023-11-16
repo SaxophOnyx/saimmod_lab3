@@ -8,11 +8,14 @@ namespace SaimmodLab3.Components.Concrete
         private readonly Random _random;
         private bool _isProcessing;
         private int _passed;
+        private int _ticksWhenProcessing;
 
 
         public int Passed => _passed;
 
         public bool CanReceive => !_isProcessing;
+
+        public int TicksWhenProcessing => _ticksWhenProcessing;
 
 
         public Channel(double processingProbability)
@@ -21,6 +24,7 @@ namespace SaimmodLab3.Components.Concrete
             _processingProbability = processingProbability;
             _random = new Random();
             _isProcessing = false;
+            _ticksWhenProcessing = 0;
         }
 
 
@@ -33,6 +37,7 @@ namespace SaimmodLab3.Components.Concrete
         {
             if (_isProcessing)
             {
+                ++_ticksWhenProcessing;
                 double probability = _random.NextDouble();
 
                 if (probability < _processingProbability)

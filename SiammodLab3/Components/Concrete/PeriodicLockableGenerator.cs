@@ -9,9 +9,12 @@ namespace SaimmodLab3.Components.Concrete
         private int _ticksBeforeGeneration;
         private bool _isLocked;
         private int _generatedCount;
+        private int _ticksWhenLocked;
 
 
         public int Generated => _generatedCount;
+
+        public int TicksWhenLocked => _ticksWhenLocked;
 
 
         public PeriodicLockableGenerator(IReceiver next, int period)
@@ -21,12 +24,15 @@ namespace SaimmodLab3.Components.Concrete
             _ticksBeforeGeneration = period;
             _isLocked = false;
             _generatedCount = 0;
+            _ticksWhenLocked = 0;
         }
 
         public void Tick()
         {
             if (_isLocked)
             {
+                ++_ticksWhenLocked;
+
                 if (_next.CanReceive)
                 {
                     Generate();
