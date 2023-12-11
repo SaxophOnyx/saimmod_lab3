@@ -2,13 +2,15 @@
 using SaimmodLab3.Components.Abstract;
 using SaimmodLab3.Components.Concrete;
 
+using Channel = SaimmodLab3.Components.Concrete.Channel;
+
 namespace SaimmodLab3
 {
     internal class Program
     {
         public static void Main(string[] args)
         {
-            Main_29();
+            Main_Pasha();
         }
 
         private static void Main_16()
@@ -64,6 +66,61 @@ namespace SaimmodLab3
                 foreach (var component in components)
                     component.Tick();
             }
+        }
+
+        private static void Main_Pasha()
+        {
+            double p1 = 0.4;
+            double p2 = 0.4;
+            int period = 2;
+            int ticks = 10000;
+
+            int applicationsCounter = 0;
+
+            Channel channel_2 = new Channel(1 - p2);
+            BufferComponent buffer = new BufferComponent(channel_2, 2);
+            ThrowingChannel channel_1 = new ThrowingChannel(buffer, 1 - p1);
+            PeriodicThrowingGenerator generator = new PeriodicThrowingGenerator(channel_1, period);
+
+            List<IComponent> components = new()
+            {
+                channel_2, buffer, channel_1, generator
+            };
+
+            for (int i = 0; i < ticks; ++i)
+            {
+                foreach (var component in components)
+                    component.Tick();
+
+                if (!channel_1.CanReceive)
+                    ++applicationsCounter;
+
+                if (!channel_2.CanReceive)
+                    ++applicationsCounter;
+
+                applicationsCounter += buffer.Count;
+            }
+
+            double a = channel_2.Passed * 1.0 / ticks;
+            double q = channel_2.Passed * 1.0 / generator.Generated;
+            double rejProb = (generator.Generated - channel_2.Passed) * 1.0 / generator.Generated;
+            double avgBufferLength = buffer.CountPerTick.Skip(0).Select((count, tick) => count * tick).Sum() * 1.0 / ticks;
+            double avgApplicationsCount = applicationsCounter * 1.0 / ticks;
+            double k1 = channel_1.TicksWhenProcessing * 1.0 / ticks;
+            double k2 = channel_2.TicksWhenProcessing * 1.0 / ticks;
+            double lambda = channel_2.Passed * 1.0 / generator.Generated;
+            double avgTimeInBuffer = avgBufferLength / lambda;
+            double avgTimeInSystem = avgApplicationsCount / lambda;
+
+            Console.WriteLine($"A: {a}");
+            Console.WriteLine($"Q: {q}");
+            Console.WriteLine($"Вероятность отказа: {rejProb}");
+            Console.WriteLine($"Средн. длина очереди: {avgBufferLength}");
+            Console.WriteLine($"Средн. число заявок: {avgApplicationsCount}");
+            Console.WriteLine($"Средн. время в очереди: {avgTimeInBuffer}");
+            Console.WriteLine($"Средн. время в системе: {avgTimeInSystem}");
+            Console.WriteLine($"Коэфф. загрузки канала 1: {k1}");
+            Console.WriteLine($"Коэфф. загрузки канала 2: {k2}");
         }
 
         private static void Main_29()
